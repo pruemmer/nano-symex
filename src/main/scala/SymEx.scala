@@ -50,12 +50,13 @@ class SymEx(encoder : ExprEncoder, spawnSMT : => SMT) {
       val condStr = encode(cond)
       push
       addAssertion(condStr)
-      if (isSat)
+      val trueBranchSat = isSat
+      if (trueBranchSat)
         execHelp(Sequence(b1, rest), ops, depth)
       pop
       push
       addAssertion("(not " + condStr + ")")
-      if (isSat)
+      if (!trueBranchSat || isSat)
         execHelp(Sequence(b2, rest), ops, depth)
       pop
     }
