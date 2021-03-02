@@ -11,7 +11,7 @@ class DSE(encoder : ExprEncoder, spawnSMT : => SMT) {
   import SMT._
   import scala.collection.mutable.Queue
 
-  var valQueue = Queue[(Valuation, Int)]()
+  val valQueue = Queue[(Valuation, Int)]()
 
   def shutdown = smt.shutdown
 
