@@ -2,6 +2,8 @@
 import java.io.{PrintWriter, OutputStreamWriter,
                 BufferedReader, InputStreamReader}
 
+import scala.util.matching.Regex
+
 object SMT {
 
   class SMTException(msg : String) extends Exception(msg)
@@ -45,6 +47,11 @@ abstract class SMT {
   def isSat : Boolean
 
   /**
+   * Query the value of a given constant.
+   */
+  def getSatValue(name : String) : BigInt
+
+  /**
    * Reset the SMT solver to the initial state.
    */
   def reset : Unit
@@ -74,6 +81,8 @@ abstract class SMTProcess(cmd : Array[String]) extends SMT {
   private var nameCounter = 0
   private var logCmds     = false
 
+  val numberPattern: Regex = "([0-9]+)".r
+  
   def logCommands(flag : Boolean) =
     logCmds = flag
 
@@ -116,6 +125,15 @@ abstract class SMTProcess(cmd : Array[String]) extends SMT {
         false
       case str =>
         throw new SMTException("unexpected answer from solver: " + str)
+    }
+  }
+
+  def getSatValue(name : String) : BigInt = {
+    sendCommand("(get-value (" + name + "))")
+    readLine match {
+      case numberPattern.unanchored(assignment) =>
+        assignment.toInt
+      case str => 0
     }
   }
 

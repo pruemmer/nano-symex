@@ -173,6 +173,22 @@ object ExampleProg2 {
 
 }
 
+object ExampleProg3 {
+
+  import Program._
+
+  val a = Var("a")
+  val b = Var("b")
+
+  val p = Prog(
+    a := a + 1,
+    b := (a + b) - 3, 
+    If (a === b) (
+        Assert(a =/= 0)
+    )
+  )
+}
+
 object ProgTest extends App {
 
   println(ExampleProg.p)
