@@ -9,6 +9,7 @@ class SymEx(encoder : ExprEncoder, spawnSMT : => SMT) {
 
   import encoder._
   import Program._
+  import PType.PInt
   import smt._
 
   def shutdown = smt.shutdown
@@ -16,10 +17,10 @@ class SymEx(encoder : ExprEncoder, spawnSMT : => SMT) {
   smt.logCommands(false)
 
   def exec(p : Prog, variables : Seq[Var], depth : Int = Integer.MAX_VALUE) = {
-    for (v@Var(name) <- variables)
+    for (v@Var(name, PInt) <- variables)
       declareConst(name, IntType)
     val store =
-      (for (v@Var(name) <- variables) yield (v -> name)).toMap
+      (for (v@Var(name, PInt) <- variables) yield (v -> name)).toMap
 
     execHelp(p, List(), depth)(store)
 

@@ -18,12 +18,18 @@ object Program {
     def =/=(that : Expr) = !Eq(that, this)
   }
 
-  case class Var     (name : String)             extends Expr
-  case class IntConst(value : BigInt)            extends Expr
-  case class Plus    (left : Expr, right : Expr) extends Expr
-  case class Times   (left : Expr, right : Expr) extends Expr
+  case class Var     (name : String,
+                      ptype : PType.Value = PType.PInt)   extends Expr
+  case class IntConst(value : BigInt)                     extends Expr
+  case class Plus    (left : Expr, right : Expr)          extends Expr
+  case class Times   (left : Expr, right : Expr)          extends Expr
 
   implicit def int2Expr(v : Int) : Expr = IntConst(v)
+
+  object PType extends Enumeration {
+    // TODO: PArray is not handled yet
+    val PInt, PArray = Value
+  }
 
   //////////////////////////////////////////////////////////////////////////////
 

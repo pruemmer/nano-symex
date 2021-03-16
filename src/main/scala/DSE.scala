@@ -7,6 +7,7 @@ class DSE(encoder : ExprEncoder, spawnSMT : => SMT) {
 
   import encoder._
   import Program._
+  import PType.{PInt, PArray}
   import smt._
   import SMT._
   import scala.collection.mutable.Queue
@@ -20,9 +21,9 @@ class DSE(encoder : ExprEncoder, spawnSMT : => SMT) {
   def exec(p : Prog, variables : Seq[Var], depth : Int = Integer.MAX_VALUE) = {
       
     val firsttest =
-      (for (v@Var(name) <- variables) yield (v -> BigInt(0))).toMap
+      (for (v@Var(name, PInt) <- variables) yield (v -> BigInt(0))).toMap
     val initstore =
-      (for (v@Var(name) <- variables) yield (v -> name)).toMap
+      (for (v@Var(name, PInt) <- variables) yield (v -> name)).toMap
 
     valQueue.clear
 
@@ -33,7 +34,7 @@ class DSE(encoder : ExprEncoder, spawnSMT : => SMT) {
     while (!valQueue.isEmpty) {
       val (test,bl) = valQueue.dequeue
       println("now starting" + test + "level" + bl)
-      for (v@Var(name) <- variables)
+      for (v@Var(name, PInt) <- variables)
         declareConst(name, IntType)
       execHelp(p, variables, test, bl, 0)(initstore)
       reset
@@ -69,7 +70,9 @@ class DSE(encoder : ExprEncoder, spawnSMT : => SMT) {
   	  push
           addAssertion(encode(Not(cond))) ;
           if (isSat) {
-            val newtest = (for (v@Var(name) <- variables) yield (v -> getSatValue(name))).toMap 
+            val newtest =
+              (for (v@Var(name, PInt) <- variables)
+               yield (v -> getSatValue(name))).toMap
             println("new test case" + newtest)
             valQueue.enqueue((newtest,curl+1))
           }
@@ -83,7 +86,9 @@ class DSE(encoder : ExprEncoder, spawnSMT : => SMT) {
             push
             addAssertion(encode(cond))
             if (isSat) {
-              val newtest = (for (v@Var(name) <- variables) yield (v -> getSatValue(name))).toMap
+              val newtest =
+                (for (v@Var(name, PInt) <- variables)
+                 yield (v -> getSatValue(name))).toMap
               println("new test case" + newtest)
               valQueue.enqueue((newtest,curl+1))
             }
@@ -103,7 +108,9 @@ class DSE(encoder : ExprEncoder, spawnSMT : => SMT) {
       addAssertion(encode(!cond))
       if (isSat) {
         println("Found testcase leading to failing assertion:")
-        val failtest = (for (v@Var(name) <- variables) yield (v -> getSatValue(name))).toMap
+        val failtest =
+          (for (v@Var(name, PInt) <- variables)
+           yield (v -> getSatValue(name))).toMap
         println(failtest)
       }
       pop
