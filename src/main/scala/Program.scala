@@ -18,11 +18,12 @@ object Program {
     def =/=(that : Expr) = !Eq(that, this)
   }
 
-  case class Var     (name : String,
-                      ptype : PType.Value = PType.PInt)   extends Expr
-  case class IntConst(value : BigInt)                     extends Expr
-  case class Plus    (left : Expr, right : Expr)          extends Expr
-  case class Times   (left : Expr, right : Expr)          extends Expr
+  case class Var       (name : String,
+                        ptype : PType.Value = PType.PInt)   extends Expr
+  case class IntConst  (value : BigInt)                     extends Expr
+  case class Plus      (left : Expr, right : Expr)          extends Expr
+  case class Times     (left : Expr, right : Expr)          extends Expr
+  case class ArrayElem (name : String, index : Expr)          extends Expr
 
   implicit def int2Expr(v : Int) : Expr = IntConst(v)
 
@@ -80,6 +81,10 @@ object Program {
     While(cond, Prog(body : _*))
 
   implicit def var2LHS(v : Var) = new AnyRef {
+    def :=(that : Expr) = Assign(v, that)
+  }
+
+  implicit def ArElem2LHS(v : ArrayElem) = new AnyRef {
     def :=(that : Expr) = Assign(v, that)
   }
 
