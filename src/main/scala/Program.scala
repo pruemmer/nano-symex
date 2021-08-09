@@ -195,6 +195,19 @@ object ExampleProg3 {
   )
 }
 
+object ArrayProg {
+
+  import Program._
+
+  val b = Var("b")
+
+  val p = Prog(
+   ArrayElem("a",0) := 0,
+   b := ArrayElem("a",0)
+  )
+}
+
+
 object ProgTest extends App {
 
   println(ExampleProg.p)

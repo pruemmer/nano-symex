@@ -105,3 +105,14 @@ object SymExTest2 extends App {
   symex.exec(p, List(a, x), 200)
 
 }
+
+object SymExArrayTest extends App {
+
+  import ArrayProg._
+
+  val symex = new SymEx(IntExprEncoder, new Z3SMT)
+
+  symex.exec(p, List(b), 200)
+
+}
+
