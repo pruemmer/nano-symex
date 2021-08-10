@@ -205,9 +205,15 @@ object ArrayProg {
   import Program._
 
   val b = Var("b")
+  val c = Var("c")
 
   val p = Prog(
-   ArrayElem("a",0) := 0
+   ArrayElem("a",0) := 0,
+   ArrayElem("a",1) := 0,
+   If (b < 2 & b >= 0)(
+    c := ArrayElem("a",b),
+    Assert(0 =/= c)
+   )
   )
 }
 

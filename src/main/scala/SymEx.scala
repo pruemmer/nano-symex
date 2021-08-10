@@ -40,6 +40,27 @@ class SymEx(encoder : ExprEncoder, spawnSMT : => SMT) {
     case Sequence(Sequence(p1, p2), p3) =>
       execHelp(Sequence(p1, Sequence(p2, p3)), ops, depth)
 
+    case Sequence(op@Assign(lhs : Var, rhs : ArrayElem), rest) => {
+      var indexVar = freshConst(IntType)
+      push
+      addAssertion("(= " + indexVar + " " + encode(rhs.index) + ")")
+      while(isSat) {
+        val index = getSatValue(indexVar)
+	pop
+	val oldarray = if(arrays.contains(rhs.name)) arrays(rhs.name) else Map[BigInt, String]()
+	val newConst = freshConst(IntType)
+	val newarray = if(oldarray.contains(index)) oldarray else oldarray + (index -> newConst)
+	val newStore = store + (lhs -> newarray(index))
+	val newarrays = arrays + (rhs.name -> newarray)
+	println(index)
+        execHelp(rest, op :: ops, depth)(newStore, newarrays)
+	addAssertion("(not (= " + indexVar + " " + index + "))")
+	push
+	addAssertion("(= " + indexVar + " " + encode(rhs.index) + ")")
+      }
+      pop
+    }
+
     case Sequence(op@Assign(lhs : Var, rhs), rest) => {
       val newConst = freshConst(IntType)
       addAssertion("(= " + newConst + " " + encode(rhs) + ")")
@@ -49,20 +70,25 @@ class SymEx(encoder : ExprEncoder, spawnSMT : => SMT) {
 
     case Sequence(op@Assign(lhs : ArrayElem, rhs), rest) => {
       var indexVar = freshConst(IntType)
+      push
       addAssertion("(= " + indexVar + " " + encode(lhs.index) + ")")
       while(isSat) {
         val index = getSatValue(indexVar)
+	pop
 	val oldarray = if(arrays.contains(lhs.name)) arrays(lhs.name) else Map[BigInt, String]()
 	val newConst = freshConst(IntType)
 	val newarray = oldarray + (index -> newConst)
 	val newarrays = arrays + (lhs.name -> newarray)
+	println(index)
 	push
 	addAssertion("(= " + newConst + " " + encode(rhs) + ")")
         execHelp(rest, op :: ops, depth)(store, newarrays)
 	pop
 	addAssertion("(not (= " + indexVar + " " + index + "))")
+	push
 	addAssertion("(= " + indexVar + " " + encode(lhs.index) + ")")
       }
+      pop
     }
 
     case Sequence(IfThenElse(cond, b1, b2), rest) => {

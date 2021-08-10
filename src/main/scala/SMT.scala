@@ -105,8 +105,10 @@ abstract class SMTProcess(cmd : Array[String]) extends SMT {
     name
   }
 
-  def addAssertion(str : String) : Unit =
+  def addAssertion(str : String) : Unit = {
+    println("(assert " + str + ")")
     sendCommand("(assert " + str + ")")
+  }
 
   def push : Unit =
     sendCommand("(push 1)")
