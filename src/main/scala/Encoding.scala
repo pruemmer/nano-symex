@@ -12,6 +12,8 @@ abstract class ExprEncoder {
 
   type SymbStore = Map[Var, String]
 
+  type SymbArStore = Map[String, Map[BigInt, String]]
+
   def encode(expr : Expr)(implicit store : SymbStore) : String
 
   def encode(expr : BExpr)(implicit store : SymbStore) : String

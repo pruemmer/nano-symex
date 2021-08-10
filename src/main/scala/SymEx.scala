@@ -22,13 +22,13 @@ class SymEx(encoder : ExprEncoder, spawnSMT : => SMT) {
     val store =
       (for (v@Var(name, PInt) <- variables) yield (v -> name)).toMap
 
-    execHelp(p, List(), depth)(store)
+    execHelp(p, List(), depth)(store, Map())
 
     reset
   }
 
   def execHelp(p : Prog, ops : List[Prog], depth : Int)
-              (implicit store : SymbStore) : Unit = p match {
+              (implicit store : SymbStore, arrays : SymbArStore) : Unit = p match {
 
     case _ if ops.size > depth => ()
 
@@ -44,7 +44,25 @@ class SymEx(encoder : ExprEncoder, spawnSMT : => SMT) {
       val newConst = freshConst(IntType)
       addAssertion("(= " + newConst + " " + encode(rhs) + ")")
       val newStore = store + (lhs -> newConst)
-      execHelp(rest, op :: ops, depth)(newStore)
+      execHelp(rest, op :: ops, depth)(newStore, arrays)
+    }
+
+    case Sequence(op@Assign(lhs : ArrayElem, rhs), rest) => {
+      var indexVar = freshConst(IntType)
+      addAssertion("(= " + indexVar + " " + encode(lhs.index) + ")")
+      while(isSat) {
+        val index = getSatValue(indexVar)
+	val oldarray = if(arrays.contains(lhs.name)) arrays(lhs.name) else Map[BigInt, String]()
+	val newConst = freshConst(IntType)
+	val newarray = oldarray + (index -> newConst)
+	val newarrays = arrays + (lhs.name -> newarray)
+	push
+	addAssertion("(= " + newConst + " " + encode(rhs) + ")")
+        execHelp(rest, op :: ops, depth)(store, newarrays)
+	pop
+	addAssertion("(not (= " + indexVar + " " + index + "))")
+	addAssertion("(= " + indexVar + " " + encode(lhs.index) + ")")
+      }
     }
 
     case Sequence(IfThenElse(cond, b1, b2), rest) => {

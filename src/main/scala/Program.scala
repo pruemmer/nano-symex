@@ -207,8 +207,7 @@ object ArrayProg {
   val b = Var("b")
 
   val p = Prog(
-   ArrayElem("a",0) := 0,
-   b := ArrayElem("a",0)
+   ArrayElem("a",0) := 0
   )
 }
 
