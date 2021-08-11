@@ -217,6 +217,40 @@ object ArrayProg {
   )
 }
 
+object InsSort {
+
+  import Program._
+
+  val i = Var("i")
+  val j = Var("j")
+  val x = Var("x")
+  val y = Var("y")
+  val len = Var("len")
+
+  val p = Prog(
+    i := 1,
+    While (i < len)(
+      x := ArrayElem("a",i),
+      j := i - 1,
+      y := ArrayElem("a",j),
+      While(j >= 0 & y > x)(
+        ArrayElem("a",j+1) := y,
+        j := j - 1,
+	y := ArrayElem("a",j)
+      ),
+      ArrayElem("a",j+1) := x,
+      i := i + 1
+    ),
+    i := 0,
+    While(i+1 < len)(
+      x := ArrayElem("a",i),
+      y := ArrayElem("a",i+1),
+      Assert(x <= y),
+      i := i + 1
+    )
+  )
+}
+
 
 object ProgTest extends App {
 
