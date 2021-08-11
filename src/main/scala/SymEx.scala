@@ -41,23 +41,27 @@ class SymEx(encoder : ExprEncoder, spawnSMT : => SMT) {
       execHelp(Sequence(p1, Sequence(p2, p3)), ops, depth)
 
     case Sequence(op@Assign(lhs : Var, rhs : ArrayElem), rest) => {
-      var indexVar = freshConst(IntType)
+      val indexVar = freshConst(IntType)
+      //println("push " + indexVar)
       push
       addAssertion("(= " + indexVar + " " + encode(rhs.index) + ")")
+      var repeat = 0
       while(isSat) {
         val index = getSatValue(indexVar)
-	pop
+	//println(repeat + " " + indexVar + " " + index + encode(rhs.index))
+	//println("pop " + indexVar)
 	val oldarray = if(arrays.contains(rhs.name)) arrays(rhs.name) else Map[BigInt, String]()
 	val newConst = freshConst(IntType)
 	val newarray = if(oldarray.contains(index)) oldarray else oldarray + (index -> newConst)
 	val newStore = store + (lhs -> newarray(index))
 	val newarrays = arrays + (rhs.name -> newarray)
-	println(index)
         execHelp(rest, op :: ops, depth)(newStore, newarrays)
 	addAssertion("(not (= " + indexVar + " " + index + "))")
-	push
-	addAssertion("(= " + indexVar + " " + encode(rhs.index) + ")")
+	//println("(not (= " + indexVar + " " + index + "))")
+	//println("push " + indexVar)
+	repeat = repeat + 1
       }
+      //println("pop " + indexVar)
       pop
     }
 
@@ -72,21 +76,19 @@ class SymEx(encoder : ExprEncoder, spawnSMT : => SMT) {
       var indexVar = freshConst(IntType)
       push
       addAssertion("(= " + indexVar + " " + encode(lhs.index) + ")")
+      var repeat = 0
       while(isSat) {
         val index = getSatValue(indexVar)
-	pop
 	val oldarray = if(arrays.contains(lhs.name)) arrays(lhs.name) else Map[BigInt, String]()
 	val newConst = freshConst(IntType)
 	val newarray = oldarray + (index -> newConst)
 	val newarrays = arrays + (lhs.name -> newarray)
-	println(index)
 	push
 	addAssertion("(= " + newConst + " " + encode(rhs) + ")")
         execHelp(rest, op :: ops, depth)(store, newarrays)
 	pop
 	addAssertion("(not (= " + indexVar + " " + index + "))")
-	push
-	addAssertion("(= " + indexVar + " " + encode(lhs.index) + ")")
+	repeat = repeat + 1
       }
       pop
     }
@@ -152,11 +154,11 @@ object SymExTest2 extends App {
 
 object SymExArrayTest extends App {
 
-  import ArrayProg._
+  import InsSort._
 
   val symex = new SymEx(IntExprEncoder, new Z3SMT)
 
-  symex.exec(p, List(b), 200)
+  symex.exec(p, List(i, j, x, y, len), 20)
 
 }
 
