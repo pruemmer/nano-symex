@@ -7,13 +7,13 @@ object SMTTest extends App {
     import smt._
     println("Testing SMT solver " + name + " ...")
 
-    declareConst("const_232", "Int")
+    declareConst("a", "Int")
     declareConst("y", "Int")
 
-    addAssertion("(= const_232 41)")
-    addAssertion("(> const_232 y)")
+    addAssertion("(= a (- 5326))")
+    addAssertion("(> a y)")
     println(isSat)
-    if(isSat) println(getSatValue("const_232"))
+    if(isSat) println(getSatValue("a"))
 
   } finally {
     smt.shutdown
