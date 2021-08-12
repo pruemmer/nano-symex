@@ -236,7 +236,9 @@ object InsSort {
       While(j >= 0 & y > x)(
         ArrayElem("a",j+1) := y,
         j := j - 1,
-	y := ArrayElem("a",j)
+	If(j >= 0)(
+	  y := ArrayElem("a",j)
+	)
       ),
       ArrayElem("a",j+1) := x,
       i := i + 1
