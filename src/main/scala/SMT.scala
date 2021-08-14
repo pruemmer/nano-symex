@@ -81,7 +81,8 @@ abstract class SMTProcess(cmd : Array[String]) extends SMT {
   private var nameCounter = 0
   private var logCmds     = false
 
-  val numberPattern: Regex = "([0-9]+)".r
+  val NumberPattern: Regex = " ([0-9]+)".r.unanchored
+  val NegnumPattern: Regex = "- ([0-9]+)".r.unanchored
   
   def logCommands(flag : Boolean) =
     logCmds = flag
@@ -131,7 +132,8 @@ abstract class SMTProcess(cmd : Array[String]) extends SMT {
   def getSatValue(name : String) : BigInt = {
     sendCommand("(get-value (" + name + "))")
     readLine match {
-      case numberPattern.unanchored(assignment) => BigInt(assignment)
+      case NegnumPattern(assignment) => BigInt("-" + assignment)
+      case NumberPattern(assignment) => BigInt(assignment)
       case str => 0
     }
   }
